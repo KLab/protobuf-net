@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="BuildKit"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputDirectory>UnityBuild</OutputDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <UnityFiles Include="protobuf-net\bin\Unity\protobuf-net.*"/>
+    <PrecompileFiles Include="precompile\bin\Release\*.*"/>
+    <ProtogenFiles Include="ProtoGen\bin\Release\*.*"/>
+  </ItemGroup>
+  <Target Name="BuildKit">    
+    <RemoveDir Directories="$(OutputDirectory)"/>
+    <MakeDir Directories="$(OutputDirectory)\Full\unity"/>
+    <Copy SourceFiles="Licence.txt" DestinationFolder="$(OutputDirectory)"/>
+    <Copy SourceFiles="What Files Do I Need.txt" DestinationFolder="$(OutputDirectory)"/>
+    <MSBuild Projects="protobuf-net\protobuf-net.csproj" Properties="Configuration=Unity"/>
+    <MSBuild Projects="precompile\precompile.csproj" Properties="Configuration=Release"/>
+    <MSBuild Projects="ProtoGen\ProtoGen.csproj" Properties="Configuration=Release"/>
+    <Copy SourceFiles="@(UnityFiles)" DestinationFolder="$(OutputDirectory)\Full\unity"/>   
+    <Copy SourceFiles="@(PrecompileFiles)" DestinationFolder="$(OutputDirectory)\Precompile"/>
+    <Copy SourceFiles="@(ProtoGenFiles)" DestinationFolder="$(OutputDirectory)\ProtoGen"/>
+  </Target>
+</Project>
+
