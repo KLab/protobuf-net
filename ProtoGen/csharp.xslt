@@ -387,20 +387,26 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
   </xsl:template>
   
   <xsl:template match="FieldDescriptorProto[label='LABEL_REQUIRED']">
-    <xsl:variable name="type"><xsl:apply-templates select="." mode="type"/></xsl:variable>
+    <xsl:variable name="propType"><xsl:apply-templates select="." mode="type"/></xsl:variable>
     <xsl:variable name="format"><xsl:apply-templates select="." mode="format"/></xsl:variable>
+    <xsl:variable name="primitiveType"><xsl:apply-templates select="." mode="primitiveType"/></xsl:variable>
+    <xsl:variable name="defaultValue"><xsl:apply-templates select="." mode="defaultValue"/></xsl:variable>
     <xsl:variable name="field"><xsl:apply-templates select="." mode="field"/></xsl:variable>
-    private <xsl:value-of select="concat($type, ' ', $field)"/>;
-    [<xsl:apply-templates select="." mode="checkDeprecated"/>global::ProtoBuf.ProtoMember(<xsl:value-of select="number"/>, IsRequired = true, Name=@"<xsl:value-of select="name"/>", DataFormat = global::ProtoBuf.DataFormat.<xsl:value-of select="$format"/>)]<!--
-    --><xsl:if test="$optionXml">
+    <xsl:variable name="specified" select="$optionDetectMissing and ($primitiveType='struct' or $primitiveType='class')"/>
+    <xsl:variable name="fieldType"><xsl:value-of select="$propType"/><xsl:if test="$specified and $primitiveType='struct'">?</xsl:if></xsl:variable>
+    private <xsl:value-of select="concat($fieldType, ' ', $field)"/><xsl:if test="not($specified)"> = <xsl:value-of select="$defaultValue"/></xsl:if>;
+  [<xsl:apply-templates select="." mode="checkDeprecated"/>global::ProtoBuf.ProtoMember(<xsl:value-of select="number"/>, IsRequired = true, Name=@"<xsl:value-of select="name"/>", DataFormat = global::ProtoBuf.DataFormat.<xsl:value-of select="$format"/>)]<!--
+    --><xsl:if test="not($specified)">
     [global::System.Xml.Serialization.XmlElement(@"<xsl:value-of select="name"/>", Order = <xsl:value-of select="number"/>)]
     </xsl:if><xsl:if test="$optionDataContract">
     [global::System.Runtime.Serialization.DataMember(Name=@"<xsl:value-of select="name"/>", Order = <xsl:value-of select="number"/>, IsRequired = true)]
     </xsl:if><xsl:call-template name="WriteGetSet">
-      <xsl:with-param name="fieldType" select="$type"/>
-      <xsl:with-param name="propType" select="$type"/>
+      <xsl:with-param name="fieldType" select="$fieldType"/>
+      <xsl:with-param name="propType" select="$propType"/>
       <xsl:with-param name="name"><xsl:call-template name="pascal"/></xsl:with-param>
       <xsl:with-param name="field" select="$field"/>
+      <xsl:with-param name="defaultValue" select="$defaultValue"/>
+      <xsl:with-param name="specified" select="$specified"/>
     </xsl:call-template>    
   </xsl:template>
 
