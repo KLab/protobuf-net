@@ -307,6 +307,16 @@ namespace ProtoBuf.Meta
             this.setSpecified = setSpecified;
             
         }
+
+        /// <summary>
+        /// Get specifies methods.
+        /// </summary>
+        public void GetSpecified(out MethodInfo getSpecified, out MethodInfo setSpecified)
+        {
+            getSpecified = this.getSpecified;
+            setSpecified = this.setSpecified;
+        }
+
         private void ThrowIfFrozen()
         {
             if (serializer != null) throw new InvalidOperationException("The type cannot be changed once a serializer has been generated");

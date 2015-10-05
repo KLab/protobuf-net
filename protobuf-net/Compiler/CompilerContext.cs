@@ -562,6 +562,10 @@ namespace ProtoBuf.Compiler
             Helpers.DebugWriteLine(opcode + ": " + method + " on " + method.DeclaringType);
 #endif
         }
+        public void EmitThrow()
+        {
+            il.Emit(OpCodes.Throw);
+        }
         /// <summary>
         /// Pushes a null reference onto the stack. Note that this should only
         /// be used to return a null (or set a variable to null); for null-tests

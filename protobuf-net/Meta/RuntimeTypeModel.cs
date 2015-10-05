@@ -1489,6 +1489,29 @@ namespace ProtoBuf.Meta
             }
         }
 
+        private void EmitValidateRequiredField(Compiler.CompilerContext ctx, SerializerPair pair)
+        {
+            foreach (ValueMember member in pair.Type.Fields)
+            {
+                if (member.IsRequired)
+                {
+                    MethodInfo getSpecified, _;
+                    member.GetSpecified(out getSpecified, out _);
+                    if (getSpecified != null)
+                    {
+                        Compiler.CodeLabel skip = ctx.DefineLabel();
+                        ctx.LoadValue(ctx.InputValue);
+                        ctx.EmitCall(getSpecified);
+                        ctx.BranchIfTrue(skip, true);
+                        ctx.LoadValue(String.Format("The required field not set : Type = {0} FieldNumber = {1} FieldName = {2}", pair.Type.ToString(), member.FieldNumber, member.Name));
+                        ctx.EmitCtor(MapType(typeof(ProtoException)), new Type[] { MapType(typeof(string)) });
+                        ctx.EmitThrow();
+                        ctx.MarkLabel(skip);
+                    }
+                }
+            }
+        }
+
         private void WriteSerializers(CompilerOptions options, string assemblyName, TypeBuilder type, out int index, out bool hasInheritance, out SerializerPair[] methodPairs, out Compiler.CompilerContext.ILVersion ilVersion)
         {
             Compiler.CompilerContext ctx;
@@ -1536,11 +1559,13 @@ namespace ProtoBuf.Meta
                 SerializerPair pair = methodPairs[index];
                 ctx = new Compiler.CompilerContext(pair.SerializeBody, true, true, methodPairs, this, ilVersion, assemblyName, pair.Type.Type);
                 ctx.CheckAccessibility(pair.Deserialize.ReturnType);
+                EmitValidateRequiredField(ctx, pair);
                 pair.Type.Serializer.EmitWrite(ctx, ctx.InputValue);
                 ctx.Return();
 
                 ctx = new Compiler.CompilerContext(pair.DeserializeBody, true, false, methodPairs, this, ilVersion, assemblyName, pair.Type.Type);
                 pair.Type.Serializer.EmitRead(ctx, ctx.InputValue);
+                EmitValidateRequiredField(ctx, pair);
                 if (!pair.Type.Serializer.ReturnsValue)
                 {
                     ctx.LoadValue(ctx.InputValue);
