@@ -481,7 +481,11 @@ namespace ProtoBuf
         }
 #endif
 
+#if DNXCORE50
+        static readonly Encoding encoding = Encoding.UTF8;
+#else
         static readonly UTF8Encoding encoding = new UTF8Encoding();
+#endif
         /// <summary>
         /// Reads a string from the stream (using UTF8); supported wire-types: String
         /// </summary>
@@ -659,7 +663,7 @@ namespace ProtoBuf
             // then be called)
             if (blockEnd <= position || wireType == WireType.EndGroup) { return 0; }
             uint tag;
-            if (TryReadUInt32Variant(out tag))
+            if (TryReadUInt32Variant(out tag) && tag != 0)
             {
                 wireType = (WireType)(tag & 7);
                 fieldNumber = (int)(tag >> 3);
@@ -928,6 +932,8 @@ namespace ProtoBuf
                         reader.available -= len;
                     }
                     return value;
+                case WireType.Variant:
+                    return new byte[0];
                 default:
                     throw reader.CreateWireTypeException();
             }

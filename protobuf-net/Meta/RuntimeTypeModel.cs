@@ -378,7 +378,7 @@ namespace ProtoBuf.Meta
 
         /// <summary>
         /// Adds support for an additional type in this model, optionally
-        /// appplying inbuilt patterns. If the type is already known to the
+        /// applying inbuilt patterns. If the type is already known to the
         /// model, the existing type is returned **without** applying
         /// any additional behaviour.
         /// </summary>
@@ -389,7 +389,7 @@ namespace ProtoBuf.Meta
         }
         /// <summary>
         /// Adds support for an additional type in this model, optionally
-        /// appplying inbuilt patterns. If the type is already known to the
+        /// applying inbuilt patterns. If the type is already known to the
         /// model, the existing type is returned **without** applying
         /// any additional behaviour.
         /// </summary>
@@ -610,7 +610,7 @@ namespace ProtoBuf.Meta
 
         /// <summary>
         /// Adds support for an additional type in this model, optionally
-        /// appplying inbuilt patterns. If the type is already known to the
+        /// applying inbuilt patterns. If the type is already known to the
         /// model, the existing type is returned **without** applying
         /// any additional behaviour.
         /// </summary>
@@ -632,8 +632,8 @@ namespace ProtoBuf.Meta
             MetaType newType = FindWithoutAdd(type);
             if (newType != null) return newType; // return existing
             int opaqueToken = 0;
-            
-#if WINRT
+
+#if WINRT || DNXCORE50
             System.Reflection.TypeInfo typeInfo = System.Reflection.IntrospectionExtensions.GetTypeInfo(type);
             if (typeInfo.IsInterface && MetaType.ienumerable.IsAssignableFrom(typeInfo)
 #else
@@ -1741,7 +1741,7 @@ namespace ProtoBuf.Meta
             const string message = "Timeout while inspecting metadata; this may indicate a deadlock. This can often be avoided by preparing necessary serializers during application initialization, rather than allowing multiple threads to perform the initial metadata inspection; please also see the LockContended event";
             opaqueToken = 0;
 #if PORTABLE
-            if(!Monitor.TryEnter(types)) throw new TimeoutException(message); // yes, we have to do this immediately - I'm not creating a "hot" loop, just because Sleep() doesn't exist...
+            if(!Monitor.TryEnter(types, metadataTimeoutMilliseconds)) throw new TimeoutException(message);
             opaqueToken = Interlocked.CompareExchange(ref contentionCounter, 0, 0); // just fetch current value (starts at 1)
 #elif CF2 || CF35
             int remaining = metadataTimeoutMilliseconds;
@@ -1875,7 +1875,7 @@ namespace ProtoBuf.Meta
 
             if (itemType != null && defaultType == null)
             {
-#if WINRT
+#if WINRT || DNXCORE50
                 System.Reflection.TypeInfo typeInfo = System.Reflection.IntrospectionExtensions.GetTypeInfo(type);
                 if (typeInfo.IsClass && !typeInfo.IsAbstract && Helpers.GetConstructor(typeInfo, Helpers.EmptyTypes, true) != null)
 #else
@@ -1886,7 +1886,7 @@ namespace ProtoBuf.Meta
                 }
                 if (defaultType == null)
                 {
-#if WINRT
+#if WINRT || DNXCORE50
                     if (typeInfo.IsInterface)
 #else
                     if (type.IsInterface)
@@ -1896,7 +1896,7 @@ namespace ProtoBuf.Meta
                         defaultType = typeof(ArrayList);
 #else
                         Type[] genArgs;
-#if WINRT
+#if WINRT || DNXCORE50
                         if (typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(System.Collections.Generic.IDictionary<,>)
                             && itemType == typeof(System.Collections.Generic.KeyValuePair<,>).MakeGenericType(genArgs = typeInfo.GenericTypeArguments))
 #else
