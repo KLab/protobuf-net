@@ -70,7 +70,7 @@ namespace ProtoBuf
 #if TRACE
 #if MF
             Microsoft.SPOT.Trace.Print(message);
-#elif SILVERLIGHT || MONODROID || CF2 || WINRT || IOS || PORTABLE || DNXCORE50
+#elif SILVERLIGHT || MONODROID || CF2 || WINRT || IOS || PORTABLE
             System.Diagnostics.Debug.WriteLine(message);
 #else
             System.Diagnostics.Trace.WriteLine(message);
@@ -152,7 +152,7 @@ namespace ProtoBuf
             return float.IsInfinity(value);
 #endif
         }
-#if WINRT || DNXCORE50
+#if WINRT
         internal static MemberInfo GetInstanceMember(TypeInfo declaringType, string name)
         {
             PropertyInfo prop = declaringType.GetDeclaredProperty(name);
@@ -214,7 +214,7 @@ namespace ProtoBuf
         internal static MethodInfo GetInstanceMethod(Type declaringType, string name, Type[] types)
         {
             if(types == null) types = EmptyTypes;
-#if PORTABLE || DNXCORE50
+#if PORTABLE
             MethodInfo method = declaringType.GetMethod(name, types);
             if (method != null && method.IsStatic) method = null;
             return method;
@@ -227,7 +227,7 @@ namespace ProtoBuf
 
         internal static bool IsSubclassOf(Type type, Type baseClass)
         {
-#if WINRT || DNXCORE50
+#if WINRT
             return type.GetTypeInfo().IsSubclassOf(baseClass);
 #else
             return type.IsSubclassOf(baseClass);
@@ -250,7 +250,7 @@ namespace ProtoBuf
             Type.EmptyTypes;
 #endif
 
-#if WINRT || DNXCORE50
+#if WINRT
         private static readonly Type[] knownTypes = new Type[] {
                 typeof(bool), typeof(char), typeof(sbyte), typeof(byte),
                 typeof(short), typeof(ushort), typeof(int), typeof(uint),
@@ -307,8 +307,8 @@ namespace ProtoBuf
 
         public static ProtoTypeCode GetTypeCode(System.Type type)
         {
-#if WINRT || DNXCORE50
-
+#if WINRT
+            
             int idx = Array.IndexOf<Type>(knownTypes, type);
             if (idx >= 0) return knownCodes[idx];
             return type == null ? ProtoTypeCode.Empty : ProtoTypeCode.Unknown;
@@ -337,10 +337,6 @@ namespace ProtoBuf
             if (type == typeof(TimeSpan)) return ProtoTypeCode.TimeSpan;
             if (type == typeof(Guid)) return ProtoTypeCode.Guid;
             if (type == typeof(Uri)) return ProtoTypeCode.Uri;
-#if PORTABLE
-            // In PCLs, the Uri type may not match (WinRT uses Internal/Uri, .Net uses System/Uri), so match on the full name instead
-            if (type.FullName == typeof(Uri).FullName) return ProtoTypeCode.Uri;
-#endif
             if (type == typeof(byte[])) return ProtoTypeCode.ByteArray;
             if (type == typeof(System.Type)) return ProtoTypeCode.Type;
 
@@ -371,7 +367,7 @@ namespace ProtoBuf
 
         internal static bool IsValueType(Type type)
         {
-#if WINRT || DNXCORE50
+#if WINRT
             return type.GetTypeInfo().IsValueType;
 #else
             return type.IsValueType;
@@ -380,7 +376,7 @@ namespace ProtoBuf
 
         internal static bool IsEnum(Type type)
         {
-#if WINRT || DNXCORE50
+#if WINRT
             return type.GetTypeInfo().IsEnum;
 #else
             return type.IsEnum;
@@ -390,7 +386,7 @@ namespace ProtoBuf
         internal static MethodInfo GetGetMethod(PropertyInfo property, bool nonPublic, bool allowInternal)
         {
             if (property == null) return null;
-#if WINRT || DNXCORE50
+#if WINRT
             MethodInfo method = property.GetMethod;
             if (!nonPublic && method != null && !method.IsPublic) method = null;
             return method;
@@ -410,7 +406,7 @@ namespace ProtoBuf
         internal static MethodInfo GetSetMethod(PropertyInfo property, bool nonPublic, bool allowInternal)
         {
             if (property == null) return null;
-#if WINRT || DNXCORE50
+#if WINRT
             MethodInfo method = property.SetMethod;
             if (!nonPublic && method != null && !method.IsPublic) method = null;
             return method;
@@ -440,7 +436,7 @@ namespace ProtoBuf
             return true;
         }
 #endif
-#if WINRT || DNXCORE50
+#if WINRT
         private static bool IsMatch(ParameterInfo[] parameters, Type[] parameterTypes)
         {
             if (parameterTypes == null) parameterTypes = EmptyTypes;
@@ -474,7 +470,7 @@ namespace ProtoBuf
 
         internal static ConstructorInfo GetConstructor(Type type, Type[] parameterTypes, bool nonPublic)
         {
-#if PORTABLE || DNXCORE50
+#if PORTABLE
             // pretty sure this will only ever return public, but...
             ConstructorInfo ctor = type.GetConstructor(parameterTypes);
             return (ctor != null && (nonPublic || ctor.IsPublic)) ? ctor : null;
@@ -545,7 +541,7 @@ namespace ProtoBuf
 
         internal static Type GetMemberType(MemberInfo member)
         {
-#if WINRT || PORTABLE || DNXCORE50
+#if WINRT || PORTABLE
             PropertyInfo prop = member as PropertyInfo;
             if (prop != null) return prop.PropertyType;
             FieldInfo fld = member as FieldInfo;

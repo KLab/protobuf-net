@@ -25,7 +25,7 @@ namespace ProtoBuf.Serializers
             return false;
         }
         private readonly Type forType, constructType;
-#if WINRT || DNXCORE50
+#if WINRT
         private readonly TypeInfo typeInfo;
 #endif
         public Type ExpectedType { get { return forType; } }
@@ -55,7 +55,7 @@ namespace ProtoBuf.Serializers
             }
             this.forType = forType;
             this.factory = factory;
-#if WINRT || DNXCORE50
+#if WINRT
             this.typeInfo = forType.GetTypeInfo();
 #endif
             if (constructType == null)
@@ -64,7 +64,7 @@ namespace ProtoBuf.Serializers
             }
             else
             {
-#if WINRT || DNXCORE50
+#if WINRT
                 if (!typeInfo.IsAssignableFrom(constructType.GetTypeInfo()))
 #else
                 if (!forType.IsAssignableFrom(constructType))
@@ -89,7 +89,7 @@ namespace ProtoBuf.Serializers
             }
 #endif
 
-#if WINRT || DNXCORE50
+#if WINRT
             if (iextensible.IsAssignableFrom(typeInfo))
             {
                 if (typeInfo.IsValueType || !isRootType || hasSubTypes)
@@ -103,7 +103,7 @@ namespace ProtoBuf.Serializers
                 }
                 isExtensible = true;
             }
-#if WINRT || DNXCORE50
+#if WINRT
             TypeInfo constructTypeInfo = constructType.GetTypeInfo();
             hasConstructor = !constructTypeInfo.IsAbstract && Helpers.GetConstructor(constructTypeInfo, Helpers.EmptyTypes, true) != null;
 #else
@@ -114,7 +114,7 @@ namespace ProtoBuf.Serializers
                 throw new ArgumentException("The supplied default implementation cannot be created: " + constructType.FullName, "constructType");
             }
         }
-#if WINRT || DNXCORE50
+#if WINRT
         private static readonly TypeInfo iextensible = typeof(IExtensible).GetTypeInfo();
 #else
         private static readonly System.Type iextensible = typeof(IExtensible);
@@ -123,7 +123,7 @@ namespace ProtoBuf.Serializers
         private bool CanHaveInheritance
         {
             get {
-#if WINRT || DNXCORE50
+#if WINRT
                 return (typeInfo.IsClass || typeInfo.IsInterface) && !typeInfo.IsSealed;
 #else
                 return (forType.IsClass || forType.IsInterface) && !forType.IsSealed;
@@ -212,7 +212,7 @@ namespace ProtoBuf.Serializers
                         {
                             if (serType != forType && ((IProtoTypeSerializer)ser).CanCreateInstance()
                                 && serType
-#if WINRT || DNXCORE50
+#if WINRT
                                 .GetTypeInfo()
 #endif
                                 .IsSubclassOf(value.GetType()))

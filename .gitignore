@@ -7,4 +7,3 @@ TestFiles/
 *.suo
 Tools/PEVerify.*
 packages/
-project.lock.json
